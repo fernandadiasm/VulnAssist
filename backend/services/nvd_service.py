@@ -22,13 +22,18 @@ def buscar_cve_nvd(cve_id: str):
     for weakness in vuln.get("weaknesses", []):
         for description in weakness.get("description", []):
             cwe = description.get("value")
-
         if cwe and cwe.startswith("CWE-"):
             cwes.append(cwe)
 
     cvss_score = None
     severidade = None
     vetor = None
+
+    referencias = []
+    for ref in vuln.get("references", []):
+        url = ref.get("url")
+    if url:
+        referencias.append(url)
 
     if "cvssMetricV31" in metricas:
         cvss = metricas["cvssMetricV31"][0]
@@ -44,5 +49,7 @@ def buscar_cve_nvd(cve_id: str):
     "severidade": severidade,
     "vetor_cvss": vetor,
     "cwes": cwes,
-    "descricao": descricao
+    
+    "descricao": descricao,
+    "referencias": referencias,
 }
