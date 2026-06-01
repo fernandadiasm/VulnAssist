@@ -2,7 +2,7 @@ from backend.services.nvd_service import buscar_cve_nvd
 from backend.services.epss_service import buscar_epss
 from backend.services.cisa_service import buscar_cisa_kev
 from backend.services.prioritization_service import calcular_prioridade
-
+from backend.services.analysis_service import gerar_justificativa
 
 def enriquecer_cve(cve_id: str):
     dados_nvd = buscar_cve_nvd(cve_id)
@@ -19,6 +19,12 @@ def enriquecer_cve(cve_id: str):
         dados_cisa.get("esta_no_kev")
     )
 
+    justificativa = gerar_justificativa(
+    dados_nvd.get("cvss"),
+    dados_epss.get("epss"),
+    dados_cisa.get("esta_no_kev")
+    )
+    
     return {
         "identificador": dados_nvd["cve"],
         "severidade": dados_nvd["severidade"],
@@ -28,6 +34,7 @@ def enriquecer_cve(cve_id: str):
         "probabilidade_exploracao": dados_epss,
         "exploracao_conhecida": dados_cisa,
         "analise": {
+            "justificativa": justificativa,
             "resumo": "Análise com IA ainda não implementada.",
             "impacto": "Impacto será gerado posteriormente com base nos dados coletados.",
             "recomendacoes": [
