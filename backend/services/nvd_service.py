@@ -7,13 +7,24 @@ def buscar_cve_nvd(cve_id: str):
     response = requests.get(url)
     data = response.json()
 
+
     if not data.get("vulnerabilities"):
         return {"erro": "CVE não encontrada"}
 
     vuln = data["vulnerabilities"][0]["cve"]
+    
 
     descricao = vuln["descriptions"][0]["value"]
     metricas = vuln.get("metrics", {})
+
+    cwes = []
+
+    for weakness in vuln.get("weaknesses", []):
+        for description in weakness.get("description", []):
+            cwe = description.get("value")
+
+        if cwe and cwe.startswith("CWE-"):
+            cwes.append(cwe)
 
     cvss_score = None
     severidade = None
@@ -26,11 +37,12 @@ def buscar_cve_nvd(cve_id: str):
         vetor = cvss["cvssData"]["vectorString"]
 
     return {
-        "cve": vuln["id"],
-        "publicada_em": vuln["published"],
-        "ultima_atualizacao": vuln["lastModified"],
-        "cvss": cvss_score,
-        "severidade": severidade,
-        "vetor_cvss": vetor,
-        "descricao": descricao
-    }
+    "cve": vuln["id"],
+    "publicada_em": vuln["published"],
+    "ultima_atualizacao": vuln["lastModified"],
+    "cvss": cvss_score,
+    "severidade": severidade,
+    "vetor_cvss": vetor,
+    "cwes": cwes,
+    "descricao": descricao
+}
